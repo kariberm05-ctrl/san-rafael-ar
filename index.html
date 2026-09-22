@@ -1,8 +1,14 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="viewport"
+          content="width=device-width,
+                   initial-scale=1.0,
+                   maximum-scale=1.0,
+                   user-scalable=no">
 
     <title>San Rafael AR</title>
 
@@ -13,99 +19,264 @@
     <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.7/aframe/build/aframe-ar.js"></script>
 
     <style>
+
+        /* =========================================
+           CONFIGURACIÓN GENERAL
+        ========================================= */
+
+        html,
         body {
             margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
             overflow: hidden;
+            background: black;
         }
 
+
+        /* =========================================
+           VIDEO DE LA CÁMARA
+        ========================================= */
+
+        #arjs-video {
+
+            position: fixed !important;
+
+            top: 0 !important;
+            left: 0 !important;
+
+            width: 100% !important;
+            height: 100% !important;
+
+            object-fit: contain !important;
+
+            object-position: center center !important;
+
+            z-index: 0 !important;
+        }
+
+
+        /* =========================================
+           LIENZO DE REALIDAD AUMENTADA
+        ========================================= */
+
+        .a-canvas {
+
+            position: fixed !important;
+
+            top: 0 !important;
+            left: 0 !important;
+
+            width: 100% !important;
+            height: 100% !important;
+
+            z-index: 1 !important;
+        }
+
+
+        /* =========================================
+           TÍTULO
+        ========================================= */
+
         #titulo {
+
             position: fixed;
+
             top: 15px;
             left: 0;
             right: 0;
+
             z-index: 9999;
+
             text-align: center;
+
             color: white;
+
             font-family: Arial, sans-serif;
-            text-shadow: 2px 2px 4px black;
+
+            text-shadow:
+                2px 2px 4px black;
+
             pointer-events: none;
         }
 
+
         #titulo h1 {
+
             margin: 0;
+
             font-size: 28px;
         }
 
+
         #titulo p {
+
             margin: 5px;
+
             font-size: 16px;
         }
+
     </style>
+
 </head>
+
 
 <body>
 
+
+    <!-- =========================================
+         INFORMACIÓN SUPERIOR
+    ========================================= -->
+
     <div id="titulo">
+
         <h1>🔬 SAN RAFAEL AR</h1>
-        <p>La ciencia cobra vida</p>
+
+        <p>
+            La ciencia cobra vida
+        </p>
+
     </div>
 
+
+
+    <!-- =========================================
+         ESCENA DE REALIDAD AUMENTADA
+    ========================================= -->
+
     <a-scene
+
         embedded
-        arjs="sourceType: webcam; debugUIEnabled: false;"
-        renderer="logarithmicDepthBuffer: true;"
-        vr-mode-ui="enabled: false">
 
-        <!-- Marcador Hiro -->
-        <a-marker preset="hiro">
+        vr-mode-ui="enabled: false"
 
-            <!-- Modelo 3D de prueba -->
-            <a-entity position="0 0 0">
+        renderer="
+            antialias: true;
+            alpha: true;
+            logarithmicDepthBuffer: true;
+        "
 
-                <!-- Núcleo -->
+        arjs="
+            sourceType: webcam;
+            debugUIEnabled: false;
+        ">
+
+
+
+        <!-- =====================================
+             MARCADOR HIRO
+        ====================================== -->
+
+        <a-marker
+            preset="hiro">
+
+
+            <!-- =================================
+                 OBJETO 3D DE PRUEBA
+            ================================== -->
+
+            <a-entity
+                position="0 0 0">
+
+
+                <!-- NÚCLEO -->
+
                 <a-sphere
+
                     position="0 1.2 0"
+
                     radius="0.45"
+
                     color="#8e44ad"
-                    animation="property: rotation; to: 0 360 0; loop: true; dur: 5000">
+
+                    animation="
+                        property: rotation;
+                        to: 0 360 0;
+                        loop: true;
+                        dur: 5000;
+                    ">
+
                 </a-sphere>
 
-                <!-- Membrana -->
+
+
+                <!-- MEMBRANA -->
+
                 <a-torus
+
                     position="0 1.2 0"
+
                     rotation="90 0 0"
+
                     radius="0.8"
+
                     radius-tubular="0.08"
+
                     color="#3498db">
+
                 </a-torus>
 
-                <!-- Orgánulos -->
+
+
+                <!-- ORGÁNULO 1 -->
+
                 <a-sphere
+
                     position="0.6 1.2 0.2"
+
                     radius="0.15"
+
                     color="#e74c3c">
+
                 </a-sphere>
 
+
+
+                <!-- ORGÁNULO 2 -->
+
                 <a-sphere
+
                     position="-0.5 1.3 0.2"
+
                     radius="0.15"
+
                     color="#f1c40f">
+
                 </a-sphere>
 
+
+
+                <!-- ORGÁNULO 3 -->
+
                 <a-sphere
+
                     position="0 1.1 0.55"
+
                     radius="0.12"
+
                     color="#2ecc71">
+
                 </a-sphere>
+
 
             </a-entity>
 
+
         </a-marker>
 
-        <!-- Cámara -->
+
+
+        <!-- =====================================
+             CÁMARA
+        ====================================== -->
+
         <a-entity camera></a-entity>
+
 
     </a-scene>
 
+
 </body>
+
 </html>
