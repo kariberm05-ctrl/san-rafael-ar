@@ -2,7 +2,6 @@
 <html lang="es">
 
 <head>
-
     <meta charset="UTF-8">
 
     <meta name="viewport"
@@ -13,18 +12,10 @@
 
     <title>San Rafael AR - Sistema Solar</title>
 
-
-    <!-- =========================================
-         A-FRAME
-    ========================================== -->
-
+    <!-- A-FRAME -->
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
 
-
-    <!-- =========================================
-         AR.JS
-    ========================================== -->
-
+    <!-- AR.JS -->
     <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.7/aframe/build/aframe-ar.js"></script>
 
 
@@ -32,133 +23,94 @@
 
         html,
         body {
-
             margin: 0;
             padding: 0;
-
             width: 100%;
             height: 100%;
-
             overflow: hidden;
-
             background: black;
         }
 
 
-        /* =========================================
+        /* =========================
            CÁMARA
-        ========================================== */
+        ========================= */
 
         #arjs-video {
-
             position: fixed !important;
-
             top: 0 !important;
             left: 0 !important;
-
             width: 100% !important;
             height: 100% !important;
-
             object-fit: contain !important;
-
             object-position: center center !important;
-
             z-index: 0 !important;
         }
 
 
-        /* =========================================
+        /* =========================
            LIENZO AR
-        ========================================== */
+        ========================= */
 
         .a-canvas {
-
             position: fixed !important;
-
             top: 0 !important;
             left: 0 !important;
-
             width: 100% !important;
             height: 100% !important;
-
             z-index: 1 !important;
         }
 
 
-        /* =========================================
+        /* =========================
            ENCABEZADO
-        ========================================== */
+        ========================= */
 
         #titulo {
-
             position: fixed;
-
             top: 12px;
-
             left: 0;
             right: 0;
-
             z-index: 9999;
-
             text-align: center;
-
             color: white;
-
             font-family: Arial, sans-serif;
-
-            text-shadow:
-                2px 2px 5px black;
-
+            text-shadow: 2px 2px 5px black;
             pointer-events: none;
         }
 
-
         #titulo h1 {
-
             margin: 0;
-
             font-size: 27px;
         }
 
-
         #titulo p {
-
             margin: 4px;
-
             font-size: 15px;
         }
 
 
-        /* =========================================
-           INFORMACIÓN INFERIOR
-        ========================================== */
+        /* =========================
+           INSTRUCCIÓN
+        ========================= */
 
         #instruccion {
-
             position: fixed;
-
             bottom: 18px;
-
             left: 50%;
-
             transform: translateX(-50%);
-
             z-index: 9999;
 
-            background: rgba(0, 0, 0, 0.65);
-
+            background: rgba(0, 0, 0, 0.70);
             color: white;
 
             padding: 10px 18px;
-
             border-radius: 20px;
 
             font-family: Arial, sans-serif;
-
             font-size: 14px;
 
             text-align: center;
-
             width: 80%;
 
             pointer-events: none;
@@ -167,9 +119,9 @@
     </style>
 
 
-    <!-- =========================================
-         COMPONENTE PARA LAS ÓRBITAS
-    ========================================== -->
+    <!-- =========================
+         MOVIMIENTO DE LOS PLANETAS
+    ========================= -->
 
     <script>
 
@@ -189,6 +141,7 @@
 
             },
 
+
             init: function () {
 
                 this.angulo =
@@ -196,19 +149,23 @@
 
             },
 
+
             tick: function (time, deltaTime) {
 
                 this.angulo +=
                     this.data.velocidad *
                     (deltaTime / 16);
 
+
                 const x =
                     Math.cos(this.angulo) *
                     this.data.radio;
 
+
                 const z =
                     Math.sin(this.angulo) *
                     this.data.radio;
+
 
                 this.el.object3D.position.x = x;
 
@@ -218,9 +175,7 @@
 
         });
 
-
     </script>
-
 
 </head>
 
@@ -228,9 +183,9 @@
 <body>
 
 
-    <!-- =========================================
-         ENCABEZADO
-    ========================================== -->
+    <!-- =========================
+         TÍTULO
+    ========================= -->
 
     <div id="titulo">
 
@@ -245,22 +200,21 @@
     </div>
 
 
-
-    <!-- =========================================
+    <!-- =========================
          INSTRUCCIÓN
-    ========================================== -->
+    ========================= -->
 
     <div id="instruccion">
 
-        🔎 Apunta al marcador y explora nuestro Sistema Solar
+        🔎 Apunta al marcador SAN RAFAEL AR
 
     </div>
 
 
 
-    <!-- =========================================
+    <!-- =========================
          ESCENA AR
-    ========================================== -->
+    ========================= -->
 
     <a-scene
 
@@ -280,27 +234,34 @@
         ">
 
 
-        <!-- =====================================
-             MARCADOR HIRO
-        ====================================== -->
+
+        <!-- ========================================
+             MARCADOR PERSONALIZADO SAN RAFAEL AR
+        ========================================= -->
 
         <a-marker
-            preset="hiro">
+            type="pattern"
+            url="san-rafael-ar-marker.patt"
+            id="sanRafaelMarker">
 
 
-            <!-- =================================
+            <!-- =========================
                  SISTEMA SOLAR
-            ================================== -->
+            ========================= -->
 
             <a-entity
+
                 id="sistemaSolar"
+
                 position="0 0 0"
+
                 scale="0.40 0.40 0.40">
 
 
-                <!-- =================================
+
+                <!-- =========================
                      SOL
-                ================================== -->
+                ========================= -->
 
                 <a-sphere
 
@@ -325,7 +286,7 @@
                 </a-sphere>
 
 
-                <!-- LUZ SOLAR -->
+                <!-- LUZ DEL SOL -->
 
                 <a-light
 
@@ -341,22 +302,16 @@
 
 
 
-                <!-- =================================
-                     ÓRBITA MERCURIO
-                ================================== -->
+                <!-- =========================
+                     MERCURIO
+                ========================= -->
 
                 <a-torus
-
                     position="0 0.8 0"
-
                     rotation="90 0 0"
-
                     radius="0.9"
-
                     radius-tubular="0.008"
-
                     color="#777777">
-
                 </a-torus>
 
 
@@ -371,48 +326,33 @@
 
 
                     <a-sphere
-
                         radius="0.10"
-
                         color="#8E8E8E">
-
                     </a-sphere>
 
 
                     <a-text
-
                         value="Mercurio"
-
                         position="0 0.22 0"
-
                         align="center"
-
                         color="white"
-
                         width="1">
-
                     </a-text>
 
                 </a-entity>
 
 
 
-                <!-- =================================
-                     ÓRBITA VENUS
-                ================================== -->
+                <!-- =========================
+                     VENUS
+                ========================= -->
 
                 <a-torus
-
                     position="0 0.8 0"
-
                     rotation="90 0 0"
-
                     radius="1.25"
-
                     radius-tubular="0.008"
-
                     color="#A67C52">
-
                 </a-torus>
 
 
@@ -427,48 +367,33 @@
 
 
                     <a-sphere
-
                         radius="0.14"
-
                         color="#D99A3D">
-
                     </a-sphere>
 
 
                     <a-text
-
                         value="Venus"
-
                         position="0 0.25 0"
-
                         align="center"
-
                         color="white"
-
                         width="1">
-
                     </a-text>
 
                 </a-entity>
 
 
 
-                <!-- =================================
-                     ÓRBITA TIERRA
-                ================================== -->
+                <!-- =========================
+                     TIERRA
+                ========================= -->
 
                 <a-torus
-
                     position="0 0.8 0"
-
                     rotation="90 0 0"
-
                     radius="1.65"
-
                     radius-tubular="0.01"
-
                     color="#3498DB">
-
                 </a-torus>
 
 
@@ -482,27 +407,20 @@
                     ">
 
 
-                    <!-- TIERRA -->
+                    <!-- PLANETA TIERRA -->
 
                     <a-sphere
-
                         radius="0.18"
-
                         color="#2471A3">
-
                     </a-sphere>
 
 
                     <!-- CONTINENTE -->
 
                     <a-sphere
-
                         position="0.10 0.06 0.12"
-
                         radius="0.07"
-
                         color="#27AE60">
-
                     </a-sphere>
 
 
@@ -517,50 +435,35 @@
 
 
                         <a-sphere
-
                             radius="0.055"
-
                             color="#D5D8DC">
-
                         </a-sphere>
 
                     </a-entity>
 
 
                     <a-text
-
                         value="Tierra"
-
                         position="0 0.30 0"
-
                         align="center"
-
                         color="white"
-
                         width="1">
-
                     </a-text>
 
                 </a-entity>
 
 
 
-                <!-- =================================
-                     ÓRBITA MARTE
-                ================================== -->
+                <!-- =========================
+                     MARTE
+                ========================= -->
 
                 <a-torus
-
                     position="0 0.8 0"
-
                     rotation="90 0 0"
-
                     radius="2.05"
-
                     radius-tubular="0.008"
-
                     color="#C0392B">
-
                 </a-torus>
 
 
@@ -575,48 +478,33 @@
 
 
                     <a-sphere
-
                         radius="0.13"
-
                         color="#C0392B">
-
                     </a-sphere>
 
 
                     <a-text
-
                         value="Marte"
-
                         position="0 0.25 0"
-
                         align="center"
-
                         color="white"
-
                         width="1">
-
                     </a-text>
 
                 </a-entity>
 
 
 
-                <!-- =================================
-                     ÓRBITA JÚPITER
-                ================================== -->
+                <!-- =========================
+                     JÚPITER
+                ========================= -->
 
                 <a-torus
-
                     position="0 0.8 0"
-
                     rotation="90 0 0"
-
                     radius="2.55"
-
                     radius-tubular="0.008"
-
                     color="#B7956A">
-
                 </a-torus>
 
 
@@ -631,48 +519,33 @@
 
 
                     <a-sphere
-
                         radius="0.28"
-
                         color="#C49A6C">
-
                     </a-sphere>
 
 
                     <a-text
-
                         value="Júpiter"
-
                         position="0 0.38 0"
-
                         align="center"
-
                         color="white"
-
                         width="1.1">
-
                     </a-text>
 
                 </a-entity>
 
 
 
-                <!-- =================================
-                     ÓRBITA SATURNO
-                ================================== -->
+                <!-- =========================
+                     SATURNO
+                ========================= -->
 
                 <a-torus
-
                     position="0 0.8 0"
-
                     rotation="90 0 0"
-
                     radius="3.05"
-
                     radius-tubular="0.008"
-
                     color="#D4AC6E">
-
                 </a-torus>
 
 
@@ -686,66 +559,44 @@
                     ">
 
 
-                    <!-- SATURNO -->
-
                     <a-sphere
-
                         radius="0.25"
-
                         color="#D4AC6E">
-
                     </a-sphere>
 
 
-                    <!-- ANILLOS -->
+                    <!-- ANILLOS DE SATURNO -->
 
                     <a-torus
-
                         rotation="90 0 0"
-
                         radius="0.38"
-
                         radius-tubular="0.035"
-
                         color="#E6CFA8">
-
                     </a-torus>
 
 
                     <a-text
-
                         value="Saturno"
-
                         position="0 0.40 0"
-
                         align="center"
-
                         color="white"
-
                         width="1.1">
-
                     </a-text>
 
                 </a-entity>
 
 
 
-                <!-- =================================
-                     ÓRBITA URANO
-                ================================== -->
+                <!-- =========================
+                     URANO
+                ========================= -->
 
                 <a-torus
-
                     position="0 0.8 0"
-
                     rotation="90 0 0"
-
                     radius="3.50"
-
                     radius-tubular="0.008"
-
                     color="#76D7C4">
-
                 </a-torus>
 
 
@@ -760,48 +611,33 @@
 
 
                     <a-sphere
-
                         radius="0.18"
-
                         color="#76D7C4">
-
                     </a-sphere>
 
 
                     <a-text
-
                         value="Urano"
-
                         position="0 0.30 0"
-
                         align="center"
-
                         color="white"
-
                         width="1">
-
                     </a-text>
 
                 </a-entity>
 
 
 
-                <!-- =================================
-                     ÓRBITA NEPTUNO
-                ================================== -->
+                <!-- =========================
+                     NEPTUNO
+                ========================= -->
 
                 <a-torus
-
                     position="0 0.8 0"
-
                     rotation="90 0 0"
-
                     radius="3.90"
-
                     radius-tubular="0.008"
-
                     color="#3498DB">
-
                 </a-torus>
 
 
@@ -816,26 +652,17 @@
 
 
                     <a-sphere
-
                         radius="0.18"
-
                         color="#3498DB">
-
                     </a-sphere>
 
 
                     <a-text
-
                         value="Neptuno"
-
                         position="0 0.30 0"
-
                         align="center"
-
                         color="white"
-
                         width="1">
-
                     </a-text>
 
                 </a-entity>
@@ -848,9 +675,9 @@
 
 
 
-        <!-- =====================================
-             CÁMARA
-        ====================================== -->
+        <!-- =========================
+             CÁMARA AR
+        ========================= -->
 
         <a-entity camera></a-entity>
 
