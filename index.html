@@ -2,221 +2,457 @@
 <html lang="es">
 
 <head>
+<meta charset="UTF-8">
 
-    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-    <meta name="viewport"
-          content="width=device-width,
-                   initial-scale=1.0,
-                   maximum-scale=1.0,
-                   user-scalable=no">
+<title>San Rafael AR - Sistema Solar</title>
 
-    <title>San Rafael AR - Sistema Solar</title>
+<!-- A-FRAME -->
+<script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
 
-
-    <!-- A-FRAME -->
-    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+<!-- AR.JS -->
+<script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.7/aframe/build/aframe-ar.js"></script>
 
 
-    <!-- AR.JS -->
-    <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.7/aframe/build/aframe-ar.js"></script>
+<style>
+
+/* =========================
+   PANTALLA
+========================= */
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: black;
+}
 
 
-    <style>
+/* =========================
+   VIDEO DE LA CÁMARA
+========================= */
 
-        html,
-        body {
+#arjs-video {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
 
-            margin: 0;
-            padding: 0;
+    width: 100% !important;
+    height: 100% !important;
 
-            width: 100%;
-            height: 100%;
+    object-fit: contain !important;
+    object-position: center center !important;
 
-            overflow: hidden;
+    z-index: 0 !important;
+}
 
-            background: black;
+
+/* =========================
+   LIENZO AR
+========================= */
+
+.a-canvas {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+
+    width: 100% !important;
+    height: 100% !important;
+
+    z-index: 1 !important;
+}
+
+
+/* =========================
+   TITULO
+========================= */
+
+#titulo {
+
+    position: fixed;
+
+    top: 12px;
+    left: 0;
+    right: 0;
+
+    z-index: 9999;
+
+    text-align: center;
+
+    color: white;
+
+    font-family: Arial, sans-serif;
+
+    text-shadow:
+        2px 2px 5px black;
+
+    pointer-events: none;
+}
+
+
+#titulo h1 {
+
+    margin: 0;
+
+    font-size: 27px;
+}
+
+
+#titulo p {
+
+    margin: 4px;
+
+    font-size: 15px;
+}
+
+
+/* =========================
+   INSTRUCCIÓN
+========================= */
+
+#instruccion {
+
+    position: fixed;
+
+    bottom: 18px;
+
+    left: 50%;
+
+    transform: translateX(-50%);
+
+    z-index: 9999;
+
+    background: rgba(0,0,0,0.70);
+
+    color: white;
+
+    padding: 10px 18px;
+
+    border-radius: 20px;
+
+    font-family: Arial, sans-serif;
+
+    font-size: 14px;
+
+    text-align: center;
+
+    width: 80%;
+
+    pointer-events: none;
+}
+
+
+/* =========================
+   FICHA DEL PLANETA
+========================= */
+
+#infoPlaneta {
+
+    display: none;
+
+    position: fixed;
+
+    top: 50%;
+
+    left: 50%;
+
+    transform: translate(-50%, -50%);
+
+    width: 82%;
+
+    max-width: 380px;
+
+    background: rgba(10, 15, 30, 0.95);
+
+    border: 2px solid white;
+
+    border-radius: 20px;
+
+    padding: 20px;
+
+    color: white;
+
+    font-family: Arial, sans-serif;
+
+    text-align: center;
+
+    z-index: 20000;
+
+    box-shadow:
+        0 0 30px rgba(255,255,255,0.4);
+}
+
+
+#infoPlaneta h2 {
+
+    margin-top: 0;
+
+    font-size: 27px;
+}
+
+
+#infoPlaneta p {
+
+    font-size: 16px;
+
+    line-height: 1.5;
+
+    margin-bottom: 18px;
+}
+
+
+/* =========================
+   BOTON CERRAR
+========================= */
+
+#cerrarInfo {
+
+    background: white;
+
+    color: black;
+
+    border: none;
+
+    border-radius: 20px;
+
+    padding: 10px 25px;
+
+    font-size: 15px;
+
+    font-weight: bold;
+
+    cursor: pointer;
+}
+
+
+#cerrarInfo:active {
+
+    transform: scale(0.95);
+}
+
+</style>
+
+
+<script>
+
+/* =====================================================
+   COMPONENTE PARA LAS ÓRBITAS
+===================================================== */
+
+AFRAME.registerComponent('orbita', {
+
+    schema: {
+
+        velocidad: {
+            type: 'number',
+            default: 0.01
+        },
+
+        radio: {
+            type: 'number',
+            default: 1
         }
 
+    },
 
-        /* =========================
-           CÁMARA
-        ========================= */
 
-        #arjs-video {
+    init: function () {
 
-            position: fixed !important;
+        this.angulo =
+            Math.random() * Math.PI * 2;
 
-            top: 0 !important;
-            left: 0 !important;
+    },
 
-            width: 100% !important;
-            height: 100% !important;
 
-            object-fit: contain !important;
+    tick: function (time, deltaTime) {
 
-            object-position: center center !important;
+        this.angulo +=
+            this.data.velocidad *
+            (deltaTime / 16);
 
-            z-index: 0 !important;
-        }
 
+        const x =
+            Math.cos(this.angulo) *
+            this.data.radio;
 
-        /* =========================
-           LIENZO AR
-        ========================= */
 
-        .a-canvas {
+        const z =
+            Math.sin(this.angulo) *
+            this.data.radio;
 
-            position: fixed !important;
 
-            top: 0 !important;
-            left: 0 !important;
+        this.el.object3D.position.x = x;
 
-            width: 100% !important;
-            height: 100% !important;
+        this.el.object3D.position.z = z;
 
-            z-index: 1 !important;
-        }
+    }
 
+});
 
-        /* =========================
-           ENCABEZADO
-        ========================= */
 
-        #titulo {
+/* =====================================================
+   INFORMACIÓN DE LOS PLANETAS
+===================================================== */
 
-            position: fixed;
+const datosPlanetas = {
 
-            top: 12px;
+    Mercurio: {
 
-            left: 0;
-            right: 0;
+        titulo: "☿️ Mercurio",
 
-            z-index: 9999;
+        texto:
+        "Mercurio es el planeta más cercano al Sol y también el más pequeño del Sistema Solar. Su superficie presenta numerosos cráteres y tiene temperaturas muy extremas."
+    },
 
-            text-align: center;
 
-            color: white;
+    Venus: {
 
-            font-family: Arial, sans-serif;
+        titulo: "♀️ Venus",
 
-            text-shadow: 2px 2px 5px black;
+        texto:
+        "Venus es el segundo planeta desde el Sol. Posee una atmósfera muy densa y es el planeta más caliente del Sistema Solar debido a su intenso efecto invernadero."
+    },
 
-            pointer-events: none;
-        }
 
+    Tierra: {
 
-        #titulo h1 {
+        titulo: "🌎 Tierra",
 
-            margin: 0;
+        texto:
+        "La Tierra es el tercer planeta desde el Sol. Posee agua líquida en abundancia y es el único planeta conocido que alberga vida."
+    },
 
-            font-size: 27px;
-        }
 
+    Marte: {
 
-        #titulo p {
+        titulo: "🔴 Marte",
 
-            margin: 4px;
+        texto:
+        "Marte es conocido como el planeta rojo debido al óxido de hierro presente en su superficie. Tiene montañas, valles, volcanes y antiguos cauces de agua."
+    },
 
-            font-size: 15px;
-        }
 
+    Júpiter: {
 
-        /* =========================
-           INSTRUCCIÓN
-        ========================= */
+        titulo: "🟠 Júpiter",
 
-        #instruccion {
+        texto:
+        "Júpiter es el planeta más grande del Sistema Solar. Es un gigante gaseoso y posee una enorme tormenta conocida como la Gran Mancha Roja."
+    },
 
-            position: fixed;
 
-            bottom: 18px;
+    Saturno: {
 
-            left: 50%;
+        titulo: "🪐 Saturno",
 
-            transform: translateX(-50%);
+        texto:
+        "Saturno es un gigante gaseoso famoso por su espectacular sistema de anillos, formado principalmente por partículas de hielo y roca."
+    },
 
-            z-index: 9999;
 
-            background: rgba(0, 0, 0, 0.70);
+    Urano: {
 
-            color: white;
+        titulo: "🔵 Urano",
 
-            padding: 10px 18px;
+        texto:
+        "Urano es un gigante helado de color azul verdoso. Su eje de rotación está muy inclinado, por lo que parece girar prácticamente de lado."
+    },
 
-            border-radius: 20px;
 
-            font-family: Arial, sans-serif;
+    Neptuno: {
 
-            font-size: 14px;
+        titulo: "🔵 Neptuno",
 
-            text-align: center;
+        texto:
+        "Neptuno es el planeta más alejado del Sol. Es un gigante helado y presenta algunos de los vientos más rápidos conocidos del Sistema Solar."
+    }
 
-            width: 80%;
+};
 
-            pointer-events: none;
-        }
 
-    </style>
+/* =====================================================
+   MOSTRAR INFORMACIÓN
+===================================================== */
 
+function mostrarPlaneta(nombre) {
 
-    <!-- =========================
-         MOVIMIENTO ORBITAL
-    ========================= -->
+    const datos =
+        datosPlanetas[nombre];
 
-    <script>
 
-        AFRAME.registerComponent('orbita', {
+    if (!datos) {
 
-            schema: {
+        return;
 
-                velocidad: {
-                    type: 'number',
-                    default: 0.01
-                },
+    }
 
-                radio: {
-                    type: 'number',
-                    default: 1
-                }
 
-            },
+    document.getElementById("tituloPlaneta").innerText =
+        datos.titulo;
 
 
-            init: function () {
+    document.getElementById("textoPlaneta").innerText =
+        datos.texto;
 
-                this.angulo =
-                    Math.random() * Math.PI * 2;
 
-            },
+    document.getElementById("infoPlaneta").style.display =
+        "block";
 
+}
 
-            tick: function (time, deltaTime) {
 
-                this.angulo +=
-                    this.data.velocidad *
-                    (deltaTime / 16);
+/* =====================================================
+   CERRAR INFORMACIÓN
+===================================================== */
 
+function cerrarInfo() {
 
-                const x =
-                    Math.cos(this.angulo) *
-                    this.data.radio;
+    document.getElementById("infoPlaneta").style.display =
+        "none";
 
+}
 
-                const z =
-                    Math.sin(this.angulo) *
-                    this.data.radio;
 
+/* =====================================================
+   ACTIVAR LOS PLANETAS
+===================================================== */
 
-                this.el.object3D.position.x = x;
+document.addEventListener("DOMContentLoaded", function () {
 
-                this.el.object3D.position.z = z;
 
-            }
+    document
+        .getElementById("cerrarInfo")
+        .addEventListener("click", cerrarInfo);
+
+
+    const planetas =
+        document.querySelectorAll(".planeta");
+
+
+    planetas.forEach(function(planeta) {
+
+
+        planeta.addEventListener("click", function () {
+
+
+            const nombre =
+                planeta.getAttribute("data-planeta");
+
+
+            mostrarPlaneta(nombre);
 
         });
 
-    </script>
+    });
+
+});
+
+</script>
 
 </head>
 
@@ -224,614 +460,706 @@
 <body>
 
 
-    <!-- =========================
-         TÍTULO
-    ========================= -->
+<!-- =================================================
+     TITULO
+================================================= -->
 
-    <div id="titulo">
+<div id="titulo">
 
-        <h1>
-            🌞 SAN RAFAEL AR 🪐
-        </h1>
+    <h1>🌞 SAN RAFAEL AR 🪐</h1>
 
-        <p>
-            El Sistema Solar cobra vida
-        </p>
+    <p>
+        El Sistema Solar cobra vida
+    </p>
 
-    </div>
+</div>
 
 
-    <!-- =========================
-         INSTRUCCIÓN
-    ========================= -->
+<!-- =================================================
+     INSTRUCCIÓN
+================================================= -->
 
-    <div id="instruccion">
+<div id="instruccion">
 
-        🔎 Apunta al marcador para explorar el Sistema Solar
+    🔎 Apunta al marcador y toca un planeta para explorar
 
-    </div>
+</div>
 
 
+<!-- =================================================
+     VENTANA DE INFORMACIÓN
+================================================= -->
 
-    <!-- =========================
-         ESCENA AR
-    ========================= -->
+<div id="infoPlaneta">
 
-    <a-scene
+    <h2 id="tituloPlaneta">
+        Planeta
+    </h2>
 
-        embedded
+    <p id="textoPlaneta">
+        Información del planeta.
+    </p>
 
-        vr-mode-ui="enabled: false"
+    <button id="cerrarInfo">
+        CERRAR
+    </button>
 
-        renderer="
-            antialias: true;
-            alpha: true;
-            logarithmicDepthBuffer: true;
-        "
+</div>
 
-        arjs="
-            sourceType: webcam;
-            debugUIEnabled: false;
-        ">
 
+<!-- =================================================
+     ESCENA AR
+================================================= -->
 
-        <!-- =========================
-             MARCADOR HIRO
-        ========================= -->
+<a-scene
 
-        <a-marker preset="hiro">
+    embedded
 
+    vr-mode-ui="enabled: false"
 
-            <!-- =========================
-                 SISTEMA SOLAR
-            ========================= -->
+    renderer="
+        antialias: true;
+        alpha: true;
+        logarithmicDepthBuffer: true;
+    "
 
-            <a-entity
+    arjs="
+        sourceType: webcam;
+        debugUIEnabled: false;
+    "
+>
 
-                id="sistemaSolar"
 
-                position="0 0 0"
+<!-- =================================================
+     MARCADOR HIRO
+================================================= -->
 
-                scale="0.40 0.40 0.40">
+<a-marker preset="hiro">
 
 
-                <!-- =========================
-                     SOL
-                ========================= -->
+<!-- =================================================
+     SISTEMA SOLAR
+================================================= -->
 
-                <a-sphere
+<a-entity
 
-                    position="0 0.8 0"
+    id="sistemaSolar"
 
-                    radius="0.55"
+    position="0 0 0"
 
-                    color="#FDB813"
+    scale="0.40 0.40 0.40"
+>
 
-                    material="
-                        emissive: #FDB813;
-                        emissiveIntensity: 1;
-                    "
 
-                    animation="
-                        property: rotation;
-                        to: 0 360 0;
-                        loop: true;
-                        dur: 10000;
-                    ">
+<!-- =================================================
+     SOL
+================================================= -->
 
-                </a-sphere>
+<a-sphere
 
+    position="0 0.8 0"
 
-                <!-- LUZ SOLAR -->
+    radius="0.55"
 
-                <a-light
+    color="#FDB813"
 
-                    type="point"
+    material="
+        emissive: #FDB813;
+        emissiveIntensity: 1;
+    "
 
-                    position="0 0.8 0"
+    animation="
+        property: rotation;
+        to: 0 360 0;
+        loop: true;
+        dur: 10000;
+    "
 
-                    intensity="2"
+>
+</a-sphere>
 
-                    distance="10">
 
-                </a-light>
+<!-- LUZ DEL SOL -->
 
+<a-light
 
+    type="point"
 
-                <!-- =========================
-                     MERCURIO
-                ========================= -->
+    position="0 0.8 0"
 
-                <a-torus
+    intensity="2"
 
-                    position="0 0.8 0"
+    distance="10"
+>
+</a-light>
 
-                    rotation="90 0 0"
 
-                    radius="0.9"
+<!-- =================================================
+     MERCURIO
+================================================= -->
 
-                    radius-tubular="0.008"
+<a-torus
 
-                    color="#777777">
+    position="0 0.8 0"
 
-                </a-torus>
+    rotation="90 0 0"
 
+    radius="0.9"
 
-                <a-entity
+    radius-tubular="0.008"
 
-                    position="0 0.8 0"
+    color="#777777"
+>
+</a-torus>
 
-                    orbita="
-                        velocidad: 0.030;
-                        radio: 0.9;
-                    ">
 
+<a-entity
 
-                    <a-sphere
-                        radius="0.10"
-                        color="#8E8E8E">
-                    </a-sphere>
+    position="0 0.8 0"
 
+    orbita="
+        velocidad: 0.030;
+        radio: 0.9;
+    "
+>
 
-                    <a-text
-                        value="Mercurio"
-                        position="0 0.22 0"
-                        align="center"
-                        color="white"
-                        width="1">
-                    </a-text>
 
-                </a-entity>
+<a-sphere
 
+    class="planeta"
 
+    data-planeta="Mercurio"
 
-                <!-- =========================
-                     VENUS
-                ========================= -->
+    radius="0.10"
 
-                <a-torus
+    color="#8E8E8E"
+>
+</a-sphere>
 
-                    position="0 0.8 0"
 
-                    rotation="90 0 0"
+<a-text
 
-                    radius="1.25"
+    value="Mercurio"
 
-                    radius-tubular="0.008"
+    position="0 0.22 0"
 
-                    color="#A67C52">
+    align="center"
 
-                </a-torus>
+    color="white"
 
+    width="1"
+>
+</a-text>
 
-                <a-entity
 
-                    position="0 0.8 0"
+</a-entity>
 
-                    orbita="
-                        velocidad: 0.024;
-                        radio: 1.25;
-                    ">
 
+<!-- =================================================
+     VENUS
+================================================= -->
 
-                    <a-sphere
-                        radius="0.14"
-                        color="#D99A3D">
-                    </a-sphere>
+<a-torus
 
+    position="0 0.8 0"
 
-                    <a-text
-                        value="Venus"
-                        position="0 0.25 0"
-                        align="center"
-                        color="white"
-                        width="1">
-                    </a-text>
+    rotation="90 0 0"
 
-                </a-entity>
+    radius="1.25"
 
+    radius-tubular="0.008"
 
+    color="#A67C52"
+>
+</a-torus>
 
-                <!-- =========================
-                     TIERRA
-                ========================= -->
 
-                <a-torus
+<a-entity
 
-                    position="0 0.8 0"
+    position="0 0.8 0"
 
-                    rotation="90 0 0"
+    orbita="
+        velocidad: 0.024;
+        radio: 1.25;
+    "
+>
 
-                    radius="1.65"
 
-                    radius-tubular="0.01"
+<a-sphere
 
-                    color="#3498DB">
+    class="planeta"
 
-                </a-torus>
+    data-planeta="Venus"
 
+    radius="0.14"
 
-                <a-entity
+    color="#D99A3D"
+>
+</a-sphere>
 
-                    position="0 0.8 0"
 
-                    orbita="
-                        velocidad: 0.020;
-                        radio: 1.65;
-                    ">
+<a-text
 
+    value="Venus"
 
-                    <!-- TIERRA -->
+    position="0 0.25 0"
 
-                    <a-sphere
+    align="center"
 
-                        radius="0.18"
+    color="white"
 
-                        color="#2471A3">
+    width="1"
+>
+</a-text>
 
-                    </a-sphere>
 
+</a-entity>
 
-                    <!-- CONTINENTE -->
 
-                    <a-sphere
+<!-- =================================================
+     TIERRA
+================================================= -->
 
-                        position="0.10 0.06 0.12"
+<a-torus
 
-                        radius="0.07"
+    position="0 0.8 0"
 
-                        color="#27AE60">
+    rotation="90 0 0"
 
-                    </a-sphere>
+    radius="1.65"
 
+    radius-tubular="0.01"
 
-                    <!-- LUNA -->
+    color="#3498DB"
+>
+</a-torus>
 
-                    <a-entity
 
-                        orbita="
-                            velocidad: 0.060;
-                            radio: 0.35;
-                        ">
+<a-entity
 
+    position="0 0.8 0"
 
-                        <a-sphere
+    orbita="
+        velocidad: 0.020;
+        radio: 1.65;
+    "
+>
 
-                            radius="0.055"
 
-                            color="#D5D8DC">
+<a-sphere
 
-                        </a-sphere>
+    class="planeta"
 
-                    </a-entity>
+    data-planeta="Tierra"
 
+    radius="0.18"
 
-                    <a-text
+    color="#2471A3"
+>
+</a-sphere>
 
-                        value="Tierra"
 
-                        position="0 0.30 0"
+<!-- CONTINENTES -->
 
-                        align="center"
+<a-sphere
 
-                        color="white"
+    position="0.10 0.06 0.12"
 
-                        width="1">
+    radius="0.07"
 
-                    </a-text>
+    color="#27AE60"
+>
+</a-sphere>
 
-                </a-entity>
 
+<!-- LUNA -->
 
+<a-entity
 
-                <!-- =========================
-                     MARTE
-                ========================= -->
+    orbita="
+        velocidad: 0.060;
+        radio: 0.35;
+    "
+>
 
-                <a-torus
 
-                    position="0 0.8 0"
+<a-sphere
 
-                    rotation="90 0 0"
+    radius="0.055"
 
-                    radius="2.05"
+    color="#D5D8DC"
+>
+</a-sphere>
 
-                    radius-tubular="0.008"
 
-                    color="#C0392B">
+</a-entity>
 
-                </a-torus>
 
+<a-text
 
-                <a-entity
+    value="Tierra"
 
-                    position="0 0.8 0"
+    position="0 0.30 0"
 
-                    orbita="
-                        velocidad: 0.016;
-                        radio: 2.05;
-                    ">
+    align="center"
 
+    color="white"
 
-                    <a-sphere
+    width="1"
+>
+</a-text>
 
-                        radius="0.13"
 
-                        color="#C0392B">
+</a-entity>
 
-                    </a-sphere>
 
+<!-- =================================================
+     MARTE
+================================================= -->
 
-                    <a-text
+<a-torus
 
-                        value="Marte"
+    position="0 0.8 0"
 
-                        position="0 0.25 0"
+    rotation="90 0 0"
 
-                        align="center"
+    radius="2.05"
 
-                        color="white"
+    radius-tubular="0.008"
 
-                        width="1">
+    color="#C0392B"
+>
+</a-torus>
 
-                    </a-text>
 
-                </a-entity>
+<a-entity
 
+    position="0 0.8 0"
 
+    orbita="
+        velocidad: 0.016;
+        radio: 2.05;
+    "
+>
 
-                <!-- =========================
-                     JÚPITER
-                ========================= -->
 
-                <a-torus
+<a-sphere
 
-                    position="0 0.8 0"
+    class="planeta"
 
-                    rotation="90 0 0"
+    data-planeta="Marte"
 
-                    radius="2.55"
+    radius="0.13"
 
-                    radius-tubular="0.008"
+    color="#C0392B"
+>
+</a-sphere>
 
-                    color="#B7956A">
 
-                </a-torus>
+<a-text
 
+    value="Marte"
 
-                <a-entity
+    position="0 0.25 0"
 
-                    position="0 0.8 0"
+    align="center"
 
-                    orbita="
-                        velocidad: 0.011;
-                        radio: 2.55;
-                    ">
+    color="white"
 
+    width="1"
+>
+</a-text>
 
-                    <a-sphere
 
-                        radius="0.28"
+</a-entity>
 
-                        color="#C49A6C">
 
-                    </a-sphere>
+<!-- =================================================
+     JÚPITER
+================================================= -->
 
+<a-torus
 
-                    <a-text
+    position="0 0.8 0"
 
-                        value="Júpiter"
+    rotation="90 0 0"
 
-                        position="0 0.38 0"
+    radius="2.55"
 
-                        align="center"
+    radius-tubular="0.008"
 
-                        color="white"
+    color="#B7956A"
+>
+</a-torus>
 
-                        width="1.1">
 
-                    </a-text>
+<a-entity
 
-                </a-entity>
+    position="0 0.8 0"
 
+    orbita="
+        velocidad: 0.011;
+        radio: 2.55;
+    "
+>
 
 
-                <!-- =========================
-                     SATURNO
-                ========================= -->
+<a-sphere
 
-                <a-torus
+    class="planeta"
 
-                    position="0 0.8 0"
+    data-planeta="Júpiter"
 
-                    rotation="90 0 0"
+    radius="0.28"
 
-                    radius="3.05"
+    color="#C49A6C"
+>
+</a-sphere>
 
-                    radius-tubular="0.008"
 
-                    color="#D4AC6E">
+<a-text
 
-                </a-torus>
+    value="Júpiter"
 
+    position="0 0.38 0"
 
-                <a-entity
+    align="center"
 
-                    position="0 0.8 0"
+    color="white"
 
-                    orbita="
-                        velocidad: 0.009;
-                        radio: 3.05;
-                    ">
+    width="1.1"
+>
+</a-text>
 
 
-                    <a-sphere
+</a-entity>
 
-                        radius="0.25"
 
-                        color="#D4AC6E">
+<!-- =================================================
+     SATURNO
+================================================= -->
 
-                    </a-sphere>
+<a-torus
 
+    position="0 0.8 0"
 
-                    <!-- ANILLOS DE SATURNO -->
+    rotation="90 0 0"
 
-                    <a-torus
+    radius="3.05"
 
-                        rotation="90 0 0"
+    radius-tubular="0.008"
 
-                        radius="0.38"
+    color="#D4AC6E"
+>
+</a-torus>
 
-                        radius-tubular="0.035"
 
-                        color="#E6CFA8">
+<a-entity
 
-                    </a-torus>
+    position="0 0.8 0"
 
+    orbita="
+        velocidad: 0.009;
+        radio: 3.05;
+    "
+>
 
-                    <a-text
 
-                        value="Saturno"
+<a-sphere
 
-                        position="0 0.40 0"
+    class="planeta"
 
-                        align="center"
+    data-planeta="Saturno"
 
-                        color="white"
+    radius="0.25"
 
-                        width="1.1">
+    color="#D4AC6E"
+>
+</a-sphere>
 
-                    </a-text>
 
-                </a-entity>
+<!-- ANILLO DE SATURNO -->
 
+<a-torus
 
+    rotation="90 0 0"
 
-                <!-- =========================
-                     URANO
-                ========================= -->
+    radius="0.38"
 
-                <a-torus
+    radius-tubular="0.035"
 
-                    position="0 0.8 0"
+    color="#E6CFA8"
+>
+</a-torus>
 
-                    rotation="90 0 0"
 
-                    radius="3.50"
+<a-text
 
-                    radius-tubular="0.008"
+    value="Saturno"
 
-                    color="#76D7C4">
+    position="0 0.40 0"
 
-                </a-torus>
+    align="center"
 
+    color="white"
 
-                <a-entity
+    width="1.1"
+>
+</a-text>
 
-                    position="0 0.8 0"
 
-                    orbita="
-                        velocidad: 0.007;
-                        radio: 3.50;
-                    ">
+</a-entity>
 
 
-                    <a-sphere
+<!-- =================================================
+     URANO
+================================================= -->
 
-                        radius="0.18"
+<a-torus
 
-                        color="#76D7C4">
+    position="0 0.8 0"
 
-                    </a-sphere>
+    rotation="90 0 0"
 
+    radius="3.50"
 
-                    <a-text
+    radius-tubular="0.008"
 
-                        value="Urano"
+    color="#76D7C4"
+>
+</a-torus>
 
-                        position="0 0.30 0"
 
-                        align="center"
+<a-entity
 
-                        color="white"
+    position="0 0.8 0"
 
-                        width="1">
+    orbita="
+        velocidad: 0.007;
+        radio: 3.50;
+    "
+>
 
-                    </a-text>
 
-                </a-entity>
+<a-sphere
 
+    class="planeta"
 
+    data-planeta="Urano"
 
-                <!-- =========================
-                     NEPTUNO
-                ========================= -->
+    radius="0.18"
 
-                <a-torus
+    color="#76D7C4"
+>
+</a-sphere>
 
-                    position="0 0.8 0"
 
-                    rotation="90 0 0"
+<a-text
 
-                    radius="3.90"
+    value="Urano"
 
-                    radius-tubular="0.008"
+    position="0 0.30 0"
 
-                    color="#3498DB">
+    align="center"
 
-                </a-torus>
+    color="white"
 
+    width="1"
+>
+</a-text>
 
-                <a-entity
 
-                    position="0 0.8 0"
+</a-entity>
 
-                    orbita="
-                        velocidad: 0.005;
-                        radio: 3.90;
-                    ">
 
+<!-- =================================================
+     NEPTUNO
+================================================= -->
 
-                    <a-sphere
+<a-torus
 
-                        radius="0.18"
+    position="0 0.8 0"
 
-                        color="#3498DB">
+    rotation="90 0 0"
 
-                    </a-sphere>
+    radius="3.90"
 
+    radius-tubular="0.008"
 
-                    <a-text
+    color="#3498DB"
+>
+</a-torus>
 
-                        value="Neptuno"
 
-                        position="0 0.30 0"
+<a-entity
 
-                        align="center"
+    position="0 0.8 0"
 
-                        color="white"
+    orbita="
+        velocidad: 0.005;
+        radio: 3.90;
+    "
+>
 
-                        width="1">
 
-                    </a-text>
+<a-sphere
 
-                </a-entity>
+    class="planeta"
 
+    data-planeta="Neptuno"
 
-            </a-entity>
+    radius="0.18"
 
+    color="#3498DB"
+>
+</a-sphere>
 
-        </a-marker>
 
+<a-text
 
-        <!-- =========================
-             CÁMARA
-        ========================= -->
+    value="Neptuno"
 
-        <a-entity camera></a-entity>
+    position="0 0.30 0"
 
+    align="center"
 
-    </a-scene>
+    color="white"
+
+    width="1"
+>
+</a-text>
+
+
+</a-entity>
+
+
+</a-entity>
+
+
+</a-marker>
+
+
+<!-- =================================================
+     CÁMARA
+================================================= -->
+
+<a-entity
+
+    camera
+
+    cursor="
+        rayOrigin: mouse;
+        fuse: false;
+    "
+
+    raycaster="
+        objects: .planeta;
+    "
+>
+</a-entity>
+
+
+</a-scene>
 
 
 </body>
